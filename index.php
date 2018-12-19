@@ -57,7 +57,7 @@ class wechatCallbackapiTest
             return false;
         }
     }
-
+    //消息发送
     public function responseMsg()
     {
         $postStr = $GLOBALS["HTTP_RAW_POST_DATA"];
