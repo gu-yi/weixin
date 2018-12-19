@@ -38,7 +38,7 @@ class wechatCallbackapiTest
             exit;
         }
     }
-
+    //签名验证
     private function checkSignature()
     {
         $signature = $_GET["signature"];
