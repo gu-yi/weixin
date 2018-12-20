@@ -77,6 +77,9 @@ class wechatCallbackapiTest
                 case 'voice':
                     $result = $this->voice($postObj);
                     break;
+                case 'event':
+                    $result = $this->event($postObj);
+                    break;
                 default:
                     $result = '未知类型:'.$RX_TYPE;
                     break;
@@ -89,7 +92,21 @@ class wechatCallbackapiTest
             exit;
         }
     }
+    //关注取消
+    private function event($postObj){
+        $content = '';
+        $event = $postObj->Event;
+        if($event == 'subscribe'){//关注
+            $content = '感谢您的关注!';
+        }elseif ($event=='unsubscribe'){
+            $content = '取消关注';
+        }else{
+            $content = '未知类型'.$event;
+        }
+        $res = $this ->r_text($postObj,$content);
+        return $res;
 
+    }
     /**
      * 文本消息
      */
