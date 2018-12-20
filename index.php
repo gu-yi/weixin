@@ -74,6 +74,9 @@ class wechatCallbackapiTest
                 case 'image':
                     $result = $this->image($postObj);
                     break;
+                case 'voice':
+                    $result = $this->voice($postObj);
+                    break;
                 default:
                     $result = '未知类型:'.$RX_TYPE;
                     break;
@@ -114,6 +117,12 @@ class wechatCallbackapiTest
         $res = $this->r_image($postObj,$content);
         return $res;
     }
+    //语音信息信息
+    private function voice($postObj){
+        $content = array("MediaId"=>$postObj->MediaId);
+        $res = $this->r_image($postObj,$content);
+        return $res;
+    }
     //回复文本信息
     private  function r_text($postObj,$content){
         $fromUsername = $postObj->FromUserName;
@@ -144,6 +153,25 @@ class wechatCallbackapiTest
                         <Image>
                             <MediaId><![CDATA[%s]]></MediaId>
                         </Image>
+                        <FuncFlag>0</FuncFlag>
+                        </xml>";
+        $result = sprintf($textTpl, $fromUsername, $toUsername, $time, 'image', $url);
+        return $result;
+    }
+    //回复语音信息
+    private  function r_voice($postObj,$url){
+        $fromUsername = $postObj->FromUserName;
+        $toUsername = $postObj->ToUserName;
+        $time = time();
+        $url = $url['MediaId'];
+        $textTpl = "<xml>
+                        <ToUserName><![CDATA[%s]]></ToUserName>
+                        <FromUserName><![CDATA[%s]]></FromUserName>
+                        <CreateTime>%s</CreateTime>
+                        <MsgType><![CDATA[%s]]></MsgType>
+                        <Voice>
+                            <MediaId><![CDATA[%s]]></MediaId>
+                        </Voice>
                         <FuncFlag>0</FuncFlag>
                         </xml>";
         $result = sprintf($textTpl, $fromUsername, $toUsername, $time, 'image', $url);
