@@ -99,11 +99,29 @@ class wechatCallbackapiTest
             $content = '现在时间:'.date("Y-m-d H:i:s",time());
         }elseif (strstr($keyword,'图片')){
             $content = array('MediaId'=>'qoLsYfF_GEaVrPHJXrsYLvfj-nqS5DRuxoJ4KMFedYb-w--44hkB0Lb9rSVFm7pS');
+        }elseif (strstr($keyword,'语音')){
+            $content = array('MediaId'=>'wzrAGXNDZsXCHysejzoaX9WBcZ5xNdY9Y4vrWwWyvQYTpAPBaa4R65VekAf6Ocmg');
+        }else if (strstr($keyword, "单图文")){
+            $content = array();
+            $content[] = array("Title"=>"美图",  "Description"=>"美丽的图", "PicUrl"=>"https://images.pexels.com/photos/532420/pexels-photo-532420.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500", "Url" =>"https://www.pexels.com");
+        }else if (strstr($keyword, "图文") || strstr($keyword, "多图文")){
+            $content = array();
+            $content[] = array("Title"=>"1标题", "Description"=>"一内容", "PicUrl"=>"https://images.pexels.com/photos/37345/underwear-beauty-model-western-model-offered.jpg?auto=compress&cs=tinysrgb&h=650&w=940", "Url" =>"https://www.pexels.com");
+            $content[] = array("Title"=>"2标题", "Description"=>"二内容", "PicUrl"=>"https://images.pexels.com/photos/37345/underwear-beauty-model-western-model-offered.jpg?auto=compress&cs=tinysrgb&h=650&w=940", "Url" =>"http://m.cnblogs.com/?u=txw1958");
+            $content[] = array("Title"=>"3标题", "Description"=>"三内容", "PicUrl"=>"https://images.pexels.com/photos/37345/underwear-beauty-model-western-model-offered.jpg?auto=compress&cs=tinysrgb&h=650&w=940", "Url" =>"http://m.cnblogs.com/?u=txw1958");
         }else{
             $content = '这是一个文本消息';
         }
+        //wzrAGXNDZsXCHysejzoaX9WBcZ5xNdY9Y4vrWwWyvQYTpAPBaa4R65VekAf6Ocmg
         if(is_array($content)){
-            $res = $this->r_image($postObj,$content);
+            if (strstr($keyword,'时间')){
+                $res = $this->r_image($postObj,$content);
+            }elseif(strstr($keyword,'语音')){
+                $res = $this->r_voice($postObj,$content);
+            }else if (strstr($keyword, "图文")){
+                $res = $this->r_pic($postObj,$content);
+            }
+
         }else{
             $res = $this->r_text($postObj,$content);
         }
@@ -137,6 +155,37 @@ class wechatCallbackapiTest
                         <FuncFlag>0</FuncFlag>
                         </xml>";
         $result = sprintf($textTpl, $fromUsername, $toUsername, $time, 'text', $content);
+        return $result;
+    }
+    //回复图文消息
+    private function r_pic($postObj,$content)
+    {
+        if(!is_array($content)){
+            return "";
+        }
+        $itemTpl = "        <item>
+            <Title><![CDATA[%s]]></Title>
+            <Description><![CDATA[%s]]></Description>
+            <PicUrl><![CDATA[%s]]></PicUrl>
+            <Url><![CDATA[%s]]></Url>
+        </item>
+";
+        $item_str = "";
+        foreach ($content as $item){
+            $item_str .= sprintf($itemTpl, $item['Title'], $item['Description'], $item['PicUrl'], $item['Url']);
+        }
+        $xmlTpl = "<xml>
+    <ToUserName><![CDATA[%s]]></ToUserName>
+    <FromUserName><![CDATA[%s]]></FromUserName>
+    <CreateTime>%s</CreateTime>
+    <MsgType><![CDATA[news]]></MsgType>
+    <ArticleCount>%s</ArticleCount>
+    <Articles>
+        $item_str    
+    </Articles>
+    </xml>";
+
+        $result = sprintf($xmlTpl, $postObj->FromUserName, $postObj->ToUserName, time(), count($content));
         return $result;
     }
     //回复图片信息
@@ -174,7 +223,7 @@ class wechatCallbackapiTest
                         </Voice>
                         <FuncFlag>0</FuncFlag>
                         </xml>";
-        $result = sprintf($textTpl, $fromUsername, $toUsername, $time, 'image', $url);
+        $result = sprintf($textTpl, $fromUsername, $toUsername, $time, 'voice', $url);
         return $result;
     }
    //记录日志
