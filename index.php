@@ -120,7 +120,7 @@ class wechatCallbackapiTest
     //语音信息信息
     private function voice($postObj){
         $content = array("MediaId"=>$postObj->MediaId);
-        $res = $this->r_image($postObj,$content);
+        $res = $this->r_voice($postObj,$content);
         return $res;
     }
     //回复文本信息
