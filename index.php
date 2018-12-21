@@ -118,6 +118,9 @@ class wechatCallbackapiTest
             $content = array('MediaId'=>'qoLsYfF_GEaVrPHJXrsYLvfj-nqS5DRuxoJ4KMFedYb-w--44hkB0Lb9rSVFm7pS');
         }elseif (strstr($keyword,'语音')){
             $content = array('MediaId'=>'wzrAGXNDZsXCHysejzoaX9WBcZ5xNdY9Y4vrWwWyvQYTpAPBaa4R65VekAf6Ocmg');
+        }elseif (strstr($keyword,'天气')){
+            $city = str_replace('天气','',$keyword);
+            $content = $this->get_weather($city);
         }else if (strstr($keyword, "单图文")){
             $content = array();
             $content[] = array("Title"=>"美图",  "Description"=>"美丽的图", "PicUrl"=>"https://images.pexels.com/photos/532420/pexels-photo-532420.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500", "Url" =>"https://www.pexels.com");
@@ -135,7 +138,7 @@ class wechatCallbackapiTest
                 $res = $this->r_image($postObj,$content);
             }elseif(strstr($keyword,'语音')){
                 $res = $this->r_voice($postObj,$content);
-            }else if (strstr($keyword, "图文")){
+            }else if (strstr($keyword, "图文") || strstr($keyword, "天气") ){
                 $res = $this->r_pic($postObj,$content);
             }
 
@@ -258,5 +261,52 @@ class wechatCallbackapiTest
             file_put_contents($log_filename, $content, FILE_APPEND);
         }
     }
+    //百度天气接口
+    function get_weather($cityName)
+    {
+        $ak = 'WT7idirGGBgA6BNdGM36f3kZ';
+        $sk = 'uqBuEvbvnLKC8QbNVB26dQYpMmGcSEHM';
+        $url = 'http://api.map.baidu.com/telematics/v3/weather?ak=%s&location=%s&output=%s&sn=%s';
+        $uri = '/telematics/v3/weather';
+        $location = $cityName;
+        $output = 'json';
+        $querystring_arrays = array(
+            'ak' => $ak,
+            'location' => $location,
+            'output' => $output
+        );
+        $querystring = http_build_query($querystring_arrays);
+        $sn = md5(urlencode($uri.'?'.$querystring.$sk));
+        $targetUrl = sprintf($url, $ak, urlencode($location), $output, $sn);
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $targetUrl);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        $result = curl_exec($ch);
+        curl_close($ch);
+
+        $result = json_decode($result, true);
+        if ($result["error"] != 0){
+            return $result["status"];
+        }
+        $curHour = (int)date('H',time());
+        $weather = $result["results"][0];
+        //因为微信限制多图文只能显示一条
+        //$weatherArray[] = array("Title" =>$weather['currentCity']."天气预报", "Description" =>"", "PicUrl" =>"", "Url" =>"");
+        for ($i = 0; $i < count($weather["weather_data"]); $i++) {
+            $weatherArray[] = array(
+                "Title"=>$weather['currentCity'],
+                "Description"=>
+                $weather["weather_data"][$i]["date"]."\n".
+                $weather["weather_data"][$i]["weather"]." ".
+                $weather["weather_data"][$i]["wind"]." ".
+                $weather["weather_data"][$i]["temperature"],
+
+                "PicUrl"=>(($curHour >= 6) && ($curHour < 18))?$weather["weather_data"][$i]["dayPictureUrl"]:$weather["weather_data"][$i]["nightPictureUrl"], "Url"=>"");
+        }
+        return $weatherArray;
+    }
+
+
 
 }
