@@ -100,10 +100,29 @@ class wechatCallbackapiTest
             $content = '感谢您的关注!';
         }elseif ($event=='unsubscribe'){
             $content = '取消关注';
+        }elseif ($event=='LOCATION'){//用户位置信息
+            //坐标转化地址
+            $url = "http://api.map.baidu.com/geocoder/v2/?ak=B944e1fce373e33ea4627f95f54f2ef9&location=$postObj->Latitude,$postObj->Longitude&output=json&coordtype=gcj02ll";
+            $output = file_get_contents($url);
+            $address = json_decode($output, true);
+            //$content = "位置 ".$address["result"]["addressComponent"]["province"]." ".$address["result"]["addressComponent"]["city"]." ".$address["result"]["addressComponent"]["district"]." ".$address["result"]["addressComponent"]["street"];
+            $content = "位置 ".$address["result"]["formatted_address"]." 附近 ".$address["result"]["business"];
+        }elseif ($event=='CLICK'){
+            if($postObj->EventKey == 'V1001_TODAY_MUSIC'){//获取音乐
+                $content = array();
+                $content[] = array("Title"=>"音乐",  "Description"=>"今日音乐", "PicUrl"=>"https://images.pexels.com/photos/532420/pexels-photo-532420.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500", "Url" =>"http://music.taihe.com/song/610370676");
+
+            }
+
         }else{
             $content = '未知类型'.$event;
         }
-        $res = $this ->r_text($postObj,$content);
+        if($postObj->EventKey == 'V1001_TODAY_MUSIC') {//获取音乐
+            $res = $this ->r_pic($postObj,$content);
+        }else{
+            $res = $this ->r_text($postObj,$content);
+        }
+
         return $res;
 
     }
@@ -114,6 +133,8 @@ class wechatCallbackapiTest
         $keyword = trim($postObj->Content);
         if (strstr($keyword,'时间')){
             $content = '现在时间:'.date("Y-m-d H:i:s",time());
+        }elseif (strstr($keyword,'授权')){
+            $content = '<a href="https://open.weixin.qq.com/connect/oauth2/authorize?appid=wx9a000b615d89c3f1&redirect_uri=http://mascot.duapp.com/oauth2.php&response_type=code&scope=snsapi_userinfo&state=1#wechat_redirect">点击这里体验</a>';
         }elseif (strstr($keyword,'图片')){
             $content = array('MediaId'=>'qoLsYfF_GEaVrPHJXrsYLvfj-nqS5DRuxoJ4KMFedYb-w--44hkB0Lb9rSVFm7pS');
         }elseif (strstr($keyword,'语音')){
@@ -132,6 +153,7 @@ class wechatCallbackapiTest
         }else{
             $content = '这是一个文本消息';
         }
+        //<a href="https://open.weixin.qq.com/connect/oauth2/authorize?appid=wx9a000b615d89c3f1&redirect_uri=http://mascot.duapp.com/oauth2.php&response_type=code&scope=snsapi_userinfo&state=1#wechat_redirect">点击这里体验</a>
         //wzrAGXNDZsXCHysejzoaX9WBcZ5xNdY9Y4vrWwWyvQYTpAPBaa4R65VekAf6Ocmg
         if(is_array($content)){
             if (strstr($keyword,'时间')){
