@@ -134,7 +134,7 @@ class wechatCallbackapiTest
         if (strstr($keyword,'时间')){
             $content = '现在时间:'.date("Y-m-d H:i:s",time());
         }elseif (strstr($keyword,'授权')){
-            $content = '<a href="https://open.weixin.qq.com/connect/oauth2/authorize?appid=wx9a000b615d89c3f1&redirect_uri=http://mascot.duapp.com/oauth2.php&response_type=code&scope=snsapi_userinfo&state=1#wechat_redirect">点击这里体验</a>';
+            $content = "授权体验\n<a href='https://open.weixin.qq.com/connect/oauth2/authorize?appid=wx3385e836f6b5aec7&redirect_uri=http://www.doubleone.top/weixin/retrun.php&response_type=code&scope=snsapi_userinfo&state=1#wechat_redirect'>点击这里体验</a>";
         }elseif (strstr($keyword,'图片')){
             $content = array('MediaId'=>'qoLsYfF_GEaVrPHJXrsYLvfj-nqS5DRuxoJ4KMFedYb-w--44hkB0Lb9rSVFm7pS');
         }elseif (strstr($keyword,'语音')){
